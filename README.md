@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Recently a Development Company contact us (flugel.it)[http://flugel.it/] in order to
+Recently a Development Company contact us [flugel.it](http://flugel.it/) in order to
 help them to handle a Site running in AWS WebServices. Particularity of this Site, based
 in a popular CMS, using a LAMP stack together with RDS and ElasticCache, is that traffic
 varies quite a bit, when they have events.
@@ -36,7 +36,7 @@ Terraform is a tool for building, changing, and versioning infrastructure safely
 *Note* for the sake of this article, we did a few small modifications of the Terraform
 code so anyone can follow alone this guide.
 
-First of, head over (moving-to-terraform)[repo-url] Github repository. All the files
+First of, head over [moving-to-terraform](https://github.com/abednarik/moving-to-terraform) Github repository. All the files
 involved in this article are there.
 
 In Terraform, the first we need to do is to create same variables. As you may know, variables
@@ -52,10 +52,10 @@ variable "aws_ami" {
 }
 ```
 
-I choose to atore variables in a dedicated file (variables.tf)[repo-url:variables.tf]. Please, have
+I choose to atore variables in a dedicated file [variables.tf](https://github.com/abednarik/moving-to-terraform/blob/master/variables.tf). Please, have
 a look at the file and get familiar with it.
 
-Now, let get started with the (main.tf)[repo-url:main.tf]. Here is where we set all the resources we
+Now, let get started with the [main.tf](https://github.com/abednarik/moving-to-terraform/blob/master/main.tf). Here is where we set all the resources we
 plan to use in AWS.
 First, we define the provider. Terraform supports multiple providers, Like AWS Web Services, DigitalOcean,
 Azure, Google Cloud, OpenStack and others.
@@ -321,7 +321,7 @@ terraform  apply -var-file example.tfvars
 
 This will take a while since we are using s smal AWS Instance that is free to use. Wait a few minutes
 until the instance is ready. You can check this using AWS Console.
-If everything went well, you should get at the end what we have in (outputs.tf)[repo-url:outputs.tf].
+If everything went well, you should get at the end what we have in [outputs.tf][https://github.com/abednarik/moving-to-terraform/blob/master/outputs.tf].
 We use this file to show details of resources created, in this case the ELB fqdn, in my case is:
 *elb-web-example-213959227.us-east-1.elb.amazonaws.com*
 You can verify out stack is working using curl or wget like this
