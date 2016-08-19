@@ -6,16 +6,16 @@ Recientemente una compañia de Desarrollo nos contacto en [flugel.it](http://flu
 para ayudarlos a administrar un Site en AWS WebServices. El Site, basado en un popular
 CMS, corriendo en un stack LAMP y utilizando servicios como RDS para Base de Datos y ElasticCache
 para cache. La particularidad de este Site es que el tráfico varía mucho, ya que manejan
-eventos, donde el tráfico crece significativamente con el resto a ls visitas que tiene
-abitualmente.
+eventos, donde el tráfico crece significativamente con respecto a las visitas que tienen
+habitualmente.
 
 ## Desafío y Primeros Pasos
 
-Nuestro primer desafío fue mover servidores de aplicaciones a partir de un código de CloudFormation
-feo Terraformar. El problema aquí es que, como ya mencioné, la Plataforma ya está en
-la producción y el uso de RDS y Elasticsearch, colocado dentro de una VPC dedicado, lo que a fin
-hacer esta migración sin afectar a los usuarios que necesitábamos para integrar con Terraform
-algunos recursos ya creados en AWS.
+Nuestro primer desafío fue mover application servers a partir de un código de CloudFormation
+a Terraform. El problema aquí es que, como ya mencioné, la Plataforma ya está en
+producción y tanto RDS como ElasticCache estan dentro de una VPC dedicada, por lo que hay
+que reutilizar e integrar algunos recursos previamente existentes en Terraform sin afectar el correcto
+funcionamiento del Site.
 
 ## Requerimientos
 
@@ -35,18 +35,18 @@ necesario contar con los siguientes recursos previamente creados en AWS.
 Terraform es una herramienta para la creacion, modificación y control de versiones de la infraestructura
 de forma segura y eficiente. Terraform puede gestionar los proveedores mas populares de servicios Cloud existentes.
 
-### Terraform Configuration
+### Configuracion de Terraform
 
 *Nota* para seguir este artículo, se hiciseron algunas pequeñas modificaciones en la configuracion de Terraform
-de modo que cualquier persona puede seguir esta guía.
+de modo que cualquiera  puede seguir esta guía.
 
-En primer lugar, puedes revisar [moving-to-terraform](https://github.com/abednarik/moving-to-terraform) repositorio
-de Github, en donde se pueden ver todos los archivos involucrados en este artículo.
+En primer lugar, puedes revisar [moving-to-terraform](https://github.com/abednarik/moving-to-terraform), en donde se
+pueden ver todos los archivos involucrados en este artículo.
 
-En Terraform, lo primero que tenemos que hacer es crear variables. Estas guardan información que utilizaremos luego.
+Lo primero que tenemos que conocer es como crear variables. Estas guardan información que utilizaremos luego.
 La definición de una variable es bastante simple.
 En este caso, definimos una variable *aws_ami*, establecemos una descripción y, finalmente, un valor por defecto.
-En este caso, utilizamos asignamos un valor a  *default* ya que la intención de utilizar el mismo AMI en todos los ambientes,
+En este caso, asignamos un valor por default ya que la intención es utilizar la mismo AMI en todos los ambientes,
 es probablemente una de las pocas variables que queremos tener exactamente igual en todos los ambientes.
 
 ```
@@ -58,7 +58,7 @@ variable "aws_ami" {
 
 Todas las variables estan definidas en el archivo [variables.tf](https://github.com/abednarik/moving-to-terraform/blob/master/variables.tf).
 
-Ahora, vamos a empezar a trabajar con [main.tf](https://github.com/abednarik/moving-to-terraform/blob/master/main.tf). Aquí es donde nos definimos todos los recursos que vamos a usar en AWS.
+Ahora, vamos a empezar a trabajar con [main.tf](https://github.com/abednarik/moving-to-terraform/blob/master/main.tf). Aquí es donde  definimos todos los recursos que vamos a usar en AWS.
 En primer lugar, definimos el proveedor. Terraform soporta múltiples proveedores, como AWS WebServices, DigitalCcean,
 Azure, Google Cliud, OpenStack y otros.
 
@@ -70,15 +70,15 @@ provider "aws" {
 }
 ```
 
-A continuación tenemos que establecer algunos Security Groups Terraform soporta muchismos recursos. La forma de definir uno
-es la siguiente formato: *resource*  *"resource_type"* *"resource_name"* donde *resource_type*
-es el recurso  que queremos configurar, en este caso *aws_security_group* y *resource_name*
-es el nombre que asignamos nosotros para luego referenciar en nuestra configuración de Terraform. finalmente
-dentro de la definición de recursos establecemos la configuración para ese recurso.
+A continuación vamos a establecer  un Security Group. Terraform soporta muchismos recursos. La forma de definir uno
+es de la siguiente formato: *resource*  *"resource_type"* *"resource_name"* donde *resource_type*
+es el recurso que queremos configurar, en este caso *resource_name* es el nombre que asignamos nosotros para luego
+referenciar en nuestra configuración de Terraform. finalmente dentro de la definición de recursos establecemos la
+configuración para ese recurso.
 
 A continuacion un recurso completo, un Security Group para ELB. Como se puede ver, utilizamos
 una variable *${var.environment}* a incluir en el Nombre y también en el Tag. Esto nos permite reutilizar
-este código para distintos ambiente, simplemente cambiando una simple variable.
+este código para distintos ambiente, simplemente cambiando una variable.
 Este Security Group es muy sencillo, permite trafico HTTP desde internet y cualquier tipo de trafico dentro
 de nuestra VPC *${var.vpc_id}*
 
@@ -112,13 +112,13 @@ resource "aws_security_group" "elb-sg" {
 Después de eso, necesitamos crear un ELB. Aquí hay algunas cosas a tener en cuenta:
 
 - *security_groups*: Como se puede ver aquí usamos _${aws_security_group.elb-sg.id}_
-esto significa que Terraform va a asociar a este recurso el Security Group que definimso previamente.
+esto significa que Terraform va a asociar a este recurso el Security Group que definimos previamente.
 - *subnets* Aca usamos corchetes, lo que significa que se trata de una lista de múltiples
-valores. Ya que tenemos más de una subred, queremos asegurarnos de que ELB puede alcanzar instancias
-en cualquier subred dentro de nuestro VPC.
+valores. Ya que tenemos más de una subnet, queremos asegurarnos de que el ELB puede alcanzar instancias
+en cualquier subnet dentro de nuestro VPC.
 - *listener*: Este bloque es donde se define protocolos y puertos, tanto para el ELB y para cada
 Instancia.
-- *health_check*: Aquí establecemos cómo podemos validar que nuestros instancias están funcionando correctamente
+- *health_check*: Aquí establecemos cómo podemos validar que nuestras instancias están funcionando correctamente
 haciendo un check HTTP sencillo
 
 Y, finalmente, el último bloque de configuracion donde hay algunos valores para el ELB, el más importante es
@@ -158,8 +158,8 @@ resource "aws_elb" "web-elb" {
 
 ```
 
-Ahora es el momento de definir la configuración para Launc Configuration. Esto es básicamente lo que no se ejecuta cuando un nuevo
-instancia se crea en base a una acción de AutoScalling.
+Ahora es el momento de definir la configuración para Launch Configuration. Esto es básicamente lo que se ejecuta cuando una
+nueva instancia se crea en base a una acción de AutoScalling.
 Algunas cosas importantes a destacar aquí:
 - *name_prefix* Este tipo de recursoo no se puede sobrescribir o modificar, por lo tanto cada vez que queremos
 cambiar algo, necesitamos una nueva configuración, por esto usamos prefix.
@@ -204,9 +204,9 @@ resource "template_file" "bootstrap" {
 ```
 
 Ahora es el momento de crear un *autoscaling_group* para poder aprovechar esta funcionalidad de AWS.
-Esto, junto con una alerta en CloudWatch permitirá que nuestra stack dcrezca cuando hay más tráfico
-y se reduzca cuando no hay necesidad de tener demasiados recursos.
-Como se puede ver aquí hacemos referencia a al recurso *launch_configuration*, creado anteriormente,
+Esto, junto con una alerta en CloudWatch permitirá que nuestra stack crezca cuando hay más tráfico
+y se reduzca cuando no hay necesidad de tener demasiados recursos para reducir costos.
+Como se puede ver  hacemos referencia a al recurso *launch_configuration*, creado anteriormente,
 usamos nuestra *VPC* y *subnets* y establecemos el número deseado de instancias, junto con los límites máximos y
 mínimas.
 
@@ -236,9 +236,9 @@ resource "aws_autoscaling_group" "web-asg" {
 
 
 Por último, necesitamos un Security Group para las instancias. Como se puede ver esto es bastante simple
-y similar al Security Group creado para el ELB. Permitimos HTTP y SSH acceso desde internet.
+y similar al Security Group creado para el ELB. Permitimos HTTP y SSH  desde internet.
 Esto está  bien, en el contexto de este ejemplo, pero *recomiendo* sólo permitir ssh desde el interior
-de la VPC, con un jump hosts, por ejemplo.
+de la VPC, con un jump hosts.
 
 
 ```
@@ -276,7 +276,7 @@ resource "aws_security_group" "default" {
 }
 ```
 
-### Running Terraform
+### Ejecutando Terraform
 
 Ahora que se ha completado la configuración Terraform, es el momento de ejecutarlo y crear todos los recursos de AWS.
 
@@ -288,7 +288,7 @@ export AWS_ACCESS_KEY_ID=XXX
 export AWS_SECRET_ACCESS_KEY=YYY
 ```
 
-- Crear un archivo .tfvars con los datos reales. Yo siempre uso el nombre del entorno para este archivo.
+- Crear un archivo .tfvars con los datos propios. Yo siempre uso el nombre del entorno para este archivo.
 Este es un ejemplo creado para este ejemplo. Basta con sustituir estos valores con los datos de cada uno.
 
 ```
@@ -309,7 +309,7 @@ asg_desired = "1"
 terraform  plan -var-file example.tfvars
 ```
 
-Es una buena practica usar *terraform plan* and de realizar algun cambio, ya que podemos ver que
+Es muy util y una buena practica usar *terraform plan* and de realizar algun cambio, ya que podemos ver que
 cambio se van a hacer en nuestra Infrastructura.
 
 
@@ -319,12 +319,12 @@ cambio se van a hacer en nuestra Infrastructura.
 terraform  apply -var-file example.tfvars
 ```
 
-Esto va a tomar un tiempo, ya que estamos usando una instancia muy pequeña.  Hay que esperar unos
+Esto va a tomar un tiempo, ya que estamos usando una instancia muy pequeña. Hay que esperar unos
 minutos hasta que la instancia este lista.
 Si todo salio bien Terraform nos va a mostrar lo que tenemos definido en [outputs.tf][https://github.com/abednarik/moving-to-terraform/blob/master/outputs.tf]
-Este archivo se usa para obtener recursos generados en AWS que previamente no podemos saber.
-En este caso el fqdn del ELB. Este e el fqdn que resulto luego de ejecutar Terraform: *elb-web-example-213959227.us-east-1.elb.amazonaws.com*
-Ahora podemos validad que Nginx este funcionando correctamente utilizando wget o curl:
+Este archivo se usa para obtener recursos generados en AWS que previamente no podemos conocer.
+En este caso el fqdn del ELB. Este es el fqdn que resulto luego de ejecutar Terraform: *elb-web-example-213959227.us-east-1.elb.amazonaws.com*
+Ahora podemos validar que Nginx este funcionando correctamente utilizando wget o curl:
 
 ```
 curl -v elb-web-example-213959227.us-east-1.elb.amazonaws.com
